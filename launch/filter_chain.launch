@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- acquisition arguments -->
+	<arg name="plugin" default='rosneuro::EGDDevice'/>
+	<arg name="devarg" default='/home/curtaz/Neurorobotics/gdf_files/g1.20240115.153338.gdf'/>
+	<arg name="framerate" default='16'/>
+	<arg name="samplerate" default='512'/>
+ 	
+	<!-- load filter chain parameters -->
+	<rosparam command="load" file="$(find rosneuro_dl)/config/ChainCfg.yaml" />
+
+	<node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen">
+		<param name="~plugin" 	  value="$(arg plugin)"/>
+		<param name="~devarg" 	  value="$(arg devarg)"/>
+		<param name="~samplerate" value="$(arg samplerate)"/>
+		<param name="~framerate"  value="$(arg framerate)"/>
+	</node>
+
+    <node name="neuroviz" pkg="rosneuro_visualizer" type="neuroviz" required="true" /> 
+
+	<node name="filterchain_node" pkg="rosneuro_dl" type="filter_chain.py" output="screen" >
+			<param name="configname" value="ChainCfg" />
+	</node>
+
+</launch>
