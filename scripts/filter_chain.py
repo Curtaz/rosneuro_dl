@@ -26,7 +26,7 @@ class FilterChain:
         low = (2*self.cutoff_low)/self.fs
         self.b_bp, self.a_bp = butter(self.order, [low, high], btype='band')
         
-        self.lap = loadmat('/home/curtaz/Neurorobotics/models/all_subjects_20240208_162941/lap.mat')['lap']
+        self.lap = loadmat(cfg['lap_path'])['lapmask']
         self.states = None
 
     def __call__(self,data):
@@ -79,7 +79,6 @@ def main():
     # Setup the filter chain
     cfg = rospy.get_param(rospy.get_param(f'/{node_name}/configname'))
     filter_chain=FilterChain(cfg)
-    print(cfg)
 
     # global raw_bag,filtered_bag
     # raw_bag = rosbag.Bag('/home/curtaz/Neurorobotics/rawdata_python.bag', 'w')

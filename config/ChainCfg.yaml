@@ -3,4 +3,4 @@ ChainCfg:
   order: 2
   cutoff_low: 2
   cutoff_high: 40
-  lap_path: "/home/curtaz/Neurorobotics/models/all_subjects_20240208_162941/lap.mat" 
+  lap_path: "/home/curtaz/Neurorobotics/neurorobotics-ws/src/rosneuro_dl/config/laplacian16.mat" 

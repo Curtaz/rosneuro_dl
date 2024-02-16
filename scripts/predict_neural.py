@@ -11,22 +11,21 @@ from rosneuro_msgs.msg import (NeuroDataFloat, NeuroDataInfo, NeuroDataInt32,
 # from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 # import rosbag
 
-
 class Predictor():
-    def __init__(self,):
-        sbj_path = '/home/curtaz/Neurorobotics/models/all_subjects_20240208_162941'
+    def __init__(self,cfg):
+        sbj_path = cfg['path']
         model_path = os.path.join(sbj_path,"model.pt")
         clf_path = os.path.join(sbj_path,"qda.joblib")
         mean_std_path = os.path.join(sbj_path,"mean_std.npz")
 
-        self.net = PrototypicalModel(EEGNet( 32, 
-                                        Chans = 32, 
-                                        Samples = 512,
-                                        dropoutRate = 0,
-                                        kernLength = 256,
-                                        F1 = 8, 
-                                        D = 2, 
-                                        F2 = 16),metric='cosine')
+        self.net = PrototypicalModel(EEGNet( cfg['embeddingDim'], 
+                                        Chans = cfg['Chans'], 
+                                        Samples = cfg['Samples'],
+                                        dropoutRate = cfg['dropoutRate'],
+                                        kernLength = cfg['kernLength'],
+                                        F1 = cfg['F1'], 
+                                        D = cfg['D'], 
+                                        F2 = cfg['F2']),metric=cfg['metric']).to('cpu')
 
         self.net.load_state_dict(torch.load(model_path))
         self.clf = load(clf_path) 
@@ -81,6 +80,7 @@ def generate_new_message(data, rate,old_message):
     pred,prob = data
 
     info = NeuroDataInfo()
+    new_msg.decoder.classes = [773,771]
     new_msg.hardpredict = NeuroDataInt32(info,pred)
     new_msg.softpredict = NeuroDataFloat(info,prob)
 
@@ -101,9 +101,10 @@ def main():
     global pred_bag
     new_data = False
     seq = 0
-    
+    node_name = 'predict_neural'
+
     # Init the node
-    rospy.init_node('predict_neural')
+    rospy.init_node(node_name)
     hz = rospy.get_param('rate', 16) # data.sr / nsample
     rate = rospy.Rate(hz)
 
@@ -114,9 +115,8 @@ def main():
     rospy.Subscriber('neurodata_filtered', NeuroFrame, callback)
 
     # Setup the classifier
-    predictor = Predictor()
-    predictor.net.to('cpu')
-
+    cfg = rospy.get_param(rospy.get_param(f'/{node_name}/configname'))
+    predictor = Predictor(cfg)
     # pred_bag = rosbag.Bag('/home/curtaz/Neurorobotics/predictions.bag', 'w')
 
     while not rospy.is_shutdown():

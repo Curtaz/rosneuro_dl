@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<launch>
+	<!--_________________________________ARGUMENTS_________________________________-->
+
+	<!-- acquisition arguments -->
+	<arg name="plugin" default='rosneuro::EGDDevice'/>
+	<!-- <arg name="devarg" default='gtec'/> -->
+	<arg name="devarg" default='/home/curtaz/Neurorobotics/recordings/d6.20240216.gdf'/>
+	<arg name="framerate"  default='16'/>
+	<arg name="samplerate" default='512'/>
+			
+	<!-- recorder arguments -->
+	<arg name="autostart" default='true'/>
+	<arg name="filepath"  default='$(env HOME)/Neurorobotics/recordings' />
+
+	<!-- protocol arguments -->
+	<arg name="subject"   default="d6"/>
+	<arg name="task"      default="mi_bhbf"/>
+	<arg name="extra"     default=""/>
+
+	<!-- Feedback arguments -->
+	<arg name="modality" 	 default='control'/>
+	<arg name="thresholds"   default='[0.9, 0.9]'/>
+	<arg name="classes"      default='[771, 773]'/>
+		
+	<!-- control framework arguments -->
+	<arg name="integratorplugin"   default="rosneuro::integrator::Exponential"/>
+	<arg name="alpha" 	    	 default='0.98'/>
+
+	<!--_________________________________PARAMETERS________________________________-->
+
+	<!-- Protocol parameters -->
+	<rosparam param="/protocol/subject"	 subst_value="True">$(arg subject)</rosparam>
+	<rosparam param="/protocol/modality" subst_value="True">$(arg modality)</rosparam>
+	<rosparam param="/protocol/task"	 subst_value="True">$(arg task)</rosparam>
+	<rosparam param="/protocol/extra"	 subst_value="True">$(arg extra)</rosparam>
+	
+	<!-- filter chain parameters -->
+	<rosparam command="load" file="$(find rosneuro_dl)/config/ChainCfg.yaml" />
+
+	<!-- model parameters -->
+	<rosparam command="load" file="$(find rosneuro_dl)/config/Model.yaml" />
+
+	<!--___________________________________NODES___________________________________-->
+	
+	<!-- aquisition node -->
+	<node name="acquisition" pkg="rosneuro_acquisition" type="acquisition" output="screen" >
+		<param name="~plugin" 	  value="$(arg plugin)"/>
+		<param name="~devarg" 	  value="$(arg devarg)"/>
+		<param name="~samplerate" value="$(arg samplerate)"/>
+		<param name="~framerate"  value="$(arg framerate)"/>
+	</node>
+
+	<!-- recorder node -->
+	<node name="recorder" pkg="rosneuro_recorder" type="recorder" >
+		<param name="~autostart" value="$(arg autostart)"/>
+		<param name="~filepath" value="$(arg filepath)"/>
+	</node>
+	
+	<!-- filterchain node -->
+	<node name="filterchain_node" pkg="rosneuro_dl" type="filter_chain.py" output="screen" >
+			<param name="configname" value="ChainCfg" />
+	</node>  
+
+      <!-- classifier node -->
+	<node name="predict_neural" pkg="rosneuro_dl" type="predict_neural.py" output="screen" >
+		<param name="configname" value="Model" />
+	</node>
+
+	<!-- integrator node -->
+	<node name="integrator" pkg="rosneuro_integrator" type="integrator" output="screen">
+		<rosparam param="plugin" subst_value="True">$(arg integratorplugin)</rosparam>
+		<rosparam param="alpha" subst_value="True">$(arg alpha)</rosparam>
+		<remap from="/smr/neuroprediction" to="/neuroprediction"/>
+		<remap from="/integrated" to="/integrator/neuroprediction"/>
+	</node> 
+
+  	<!-- neurowheel node -->
+	<node name="controlwheel" pkg="rosneuro_feedback_wheel" type="controlwheel"  output="screen">
+		<rosparam param="thresholds" subst_value="True">$(arg thresholds)</rosparam>
+		<rosparam param="classes" subst_value="True">$(arg classes)</rosparam>
+	</node>
+
+</launch>

@@ -1,0 +1,11 @@
+Model:
+  path: /home/curtaz/Neurorobotics/models/d6_20240216_120749
+  embeddingDim: 32
+  Chans : 16
+  Samples : 512
+  dropoutRate : 0
+  kernLength : 256
+  F1 : 8 
+  D : 2 
+  F2 : 16
+  metric: cosine
