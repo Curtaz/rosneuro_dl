@@ -3,9 +3,11 @@
 	<!--_________________________________ARGUMENTS_________________________________-->
 
 	<!-- acquisition arguments -->
-	<arg name="plugin" default='rosneuro::EGDDevice'/>
-	<!-- <arg name="devarg" default='gtec'/> -->
-	<arg name="devarg" default='/home/curtaz/Neurorobotics/recordings/d6.20240216.gdf'/>
+	<arg name="plugin" default='rosneuro::EGDDevice'/>	
+	<!-- <arg name="devarg" default="eego|EEG_MASK|0x001FFF600779CF25" doc="Antneuro 32ch"/>  -->
+	<!-- <arg name="devarg" default="eego|EEG_MASK|0x0001B7000231C620" doc="Antneuro 16ch"/>  -->
+	<!-- <arg name="devarg" default="gtec" doc="gtec 16ch"/> -->
+	<arg name="devarg" default='/home/curtaz/Neurorobotics/recordings/c7_antneuro_32.gdf'/>
 	<arg name="framerate"  default='16'/>
 	<arg name="samplerate" default='512'/>
 			
@@ -13,11 +15,17 @@
 	<arg name="autostart" default='true'/>
 	<arg name="filepath"  default='$(env HOME)/Neurorobotics/recordings' />
 
+	<!-- filter chain arguments -->
+	<arg name="filter" default="antneuro16" /> <!-- gtec16 antneuro16 antneuro32-->
+
 	<!-- protocol arguments -->
-	<arg name="subject"   default="d6"/>
+	<arg name="subject"   default="c7"/>
 	<arg name="task"      default="mi_bhbf"/>
 	<arg name="extra"     default=""/>
 
+	<!-- classifier arguments -->
+	<arg name="model" default="Antneuro16Generic" /> <!--Model Antneuro16Generic Antneuro32Generic-->
+	
 	<!-- Feedback arguments -->
 	<arg name="modality" 	 default='control'/>
 	<arg name="thresholds"   default='[0.9, 0.9]'/>
@@ -25,7 +33,7 @@
 		
 	<!-- control framework arguments -->
 	<arg name="integratorplugin"   default="rosneuro::integrator::Exponential"/>
-	<arg name="alpha" 	    	 default='0.98'/>
+	<arg name="alpha" 	    	 default='0.975'/>
 
 	<!--_________________________________PARAMETERS________________________________-->
 
@@ -57,14 +65,14 @@
 		<param name="~filepath" value="$(arg filepath)"/>
 	</node>
 	
-	<!-- filterchain node -->
-	<node name="filterchain_node" pkg="rosneuro_dl" type="filter_chain.py" output="screen" >
-			<param name="configname" value="ChainCfg" />
-	</node>  
+    <!-- filterchain node -->
+	<node name="filterchain_node" pkg="rosneuro_dl" type="FilterChainNode.py" output="screen" >
+			<param name="configname" value="$(arg filter)" />
+	</node>
 
       <!-- classifier node -->
-	<node name="predict_neural" pkg="rosneuro_dl" type="predict_neural.py" output="screen" >
-		<param name="configname" value="Model" />
+	<node name="predict_neural" pkg="rosneuro_dl" type="ClassifierNode.py" output="screen" >
+		<param name="configname" value="$(arg model)" />
 	</node>
 
 	<!-- integrator node -->

@@ -47,7 +47,7 @@ add_definitions(${EIGEN3_DEFINITIONS})
 ## Declare a python executable
 
 
-catkin_install_python(PROGRAMS scripts/predict_neural.py scripts/filter_chain.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+# catkin_install_python(PROGRAMS scripts/predict_neural.py scripts/filter_chain.py
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 

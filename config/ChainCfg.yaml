@@ -1,6 +1,22 @@
-ChainCfg:
+gtec16:
   samplerate: 512
   order: 2
-  cutoff_low: 2
-  cutoff_high: 40
-  lap_path: "/home/curtaz/Neurorobotics/neurorobotics-ws/src/rosneuro_dl/config/laplacian16.mat" 
+  cutoff: [2,40]
+  btype: 'band'
+  lap_path: "/home/curtaz/Neurorobotics/neurorobotics-ws/src/rosneuro_dl/config/lapmask_gtec_16.mat" 
+
+antneuro16:
+  samplerate: 512
+  order: 2
+  cutoff: [2,40]
+  btype: 'band'
+  lap_path: "/home/curtaz/Neurorobotics/neurorobotics-ws/src/rosneuro_dl/config/lapmask_antneuro_16.mat" 
+
+antneuro32:
+  samplerate: 512
+  order: 2
+  cutoff: [2,40]
+  btype: 'band'
+  lap_path: "/home/curtaz/Neurorobotics/neurorobotics-ws/src/rosneuro_dl/config/lapmask_antneuro_32.mat" 
+
+  
