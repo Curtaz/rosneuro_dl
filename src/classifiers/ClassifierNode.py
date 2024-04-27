@@ -48,7 +48,7 @@ class ClassifierNode():
         # Starting from the old message generate the new one
         new_msg = NeuroOutput()
         info = NeuroDataInfo()
-        new_msg.decoder.classes = [773,771]
+        new_msg.decoder.classes = self.classifier.get_classes()
         new_msg.hardpredict = NeuroDataInt32(info,pred)
         new_msg.softpredict = NeuroDataFloat(info,prob)
         self.pub.publish(new_msg)
@@ -69,14 +69,11 @@ class ClassifierNode():
 
         # Update the sequence number
         self.seq += 1
+        
+        to_pred = torch.from_numpy(self.buffer.astype(np.float32)).T.reshape(1,1,data.eeg.info.nchannels,data.sr)
+        return self.classifier(to_pred)
 
-        # If the buffer is filled
-        if(self.seq * data.eeg.info.nsamples >= data.sr):
-            # Compute prediction:
-            to_pred = torch.from_numpy(self.buffer.astype(np.float32)).T.reshape(1,1,data.eeg.info.nchannels,data.sr)
-            return self.classifier(to_pred)
-
-        return ([0,0],[0.5,0.5])
+ 
 
 def main():
     classifier = ClassifierNode()

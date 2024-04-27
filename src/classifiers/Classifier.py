@@ -37,6 +37,9 @@ class NeuralClassifier(Classifier):
         model_path = os.path.join(sbj_path,"model.pt")
         mean_std_path = os.path.join(sbj_path,"mean_std.npz")
         self.net = get_class(cfg['classname'])(**cfg['options']).to('cpu')
+        self.classes = cfg['classes']
+        self.num_classes = len(self.classes)
+        print(self.num_classes)
 
         self.net.eval()
         self.net.load_state_dict(torch.load(model_path)['model'])
@@ -46,9 +49,12 @@ class NeuralClassifier(Classifier):
     def __call__(self,x):
         x = (x-self.mu)/self.sigma
         with torch.no_grad():
-            probs = self.net(x).cpu()[:,:2]
+            probs = self.net(x).cpu()[:,:self.num_classes]
         probs = torch.softmax(probs,dim=1).squeeze().tolist()
-        pred = [0,0]
+        pred = [0] * self.num_classes
         pred[int(np.argmax(probs))] = 1
         return pred, probs
+    
+    def get_classes(self):
+        return self.classes
 
