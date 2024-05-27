@@ -4,6 +4,7 @@ import rospy
 import numpy as np
 from rosneuro_msgs.msg import NeuroDataFloat, NeuroDataInfo, NeuroDataInt32,NeuroOutput
 from std_msgs.msg import Int32
+from std_srvs.srv import Empty
 
 STOP = 0
 RUNNING = 1
@@ -48,12 +49,19 @@ class BufferedPredictionNode:
         # Setup the Subscriber
         rospy.Subscriber('/neuroprediction', NeuroOutput, lambda x: self.callback(x))
         rospy.Subscriber('/integrator/startStop',Int32 , lambda x: self.set_running_state(x))
-
         # Setup the classifier
         buffer_size = rospy.get_param(f'/{self.node_name}/buffer_size')
         n_classes = rospy.get_param(f'/{self.node_name}/n_classes')
+        
+        self.reset_service = rospy.Service('/integrator/reset',Empty ,self.resetIntHandler)
 
         self.buffered_prediction = BufferedPrediction(n_classes,buffer_size)
+
+    def resetIntHandler(self,msg):
+        print("Requested reset")
+        self.set_running_state(Int32(STOP))
+        self.set_running_state(Int32(RUNNING))
+        return True
 
     def set_running_state(self,state):
         new_state = state.data

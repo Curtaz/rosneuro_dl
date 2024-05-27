@@ -18,7 +18,7 @@ class ProtypicalClassifier(Classifier):
         clf_path = os.path.join(sbj_path,"qda.joblib")
         mean_std_path = os.path.join(sbj_path,"mean_std.npz")
         self.net = get_class(cfg['model']['classname'])(**cfg['model']['options']).to('cpu')
-        self.net.load_state_dict(torch.load(model_path))
+        self.net.load_state_dict(torch.load(model_path,map_location=torch.device('cpu')))
         self.clf = load(clf_path) 
         cc = np.load(mean_std_path)
         self.mu, self.sigma = cc['mu'], cc['sigma']
@@ -42,7 +42,7 @@ class NeuralClassifier(Classifier):
         print(self.num_classes)
 
         self.net.eval()
-        self.net.load_state_dict(torch.load(model_path)['model'])
+        self.net.load_state_dict(torch.load(model_path,map_location=torch.device('cpu'))['model'])
         cc = np.load(mean_std_path)
         self.mu, self.sigma = cc['mu'], cc['sigma']
 
