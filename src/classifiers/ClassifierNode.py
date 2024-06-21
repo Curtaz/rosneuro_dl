@@ -26,8 +26,10 @@ class ClassifierNode():
         rospy.Subscriber('neurodata_filtered', NeuroFrame, lambda x: self.callback(x))
         
         # Setup the classifier
-        cfg = rospy.get_param(rospy.get_param(f'/{self.node_name}/configname'))
-        self.classifier = NeuralClassifier(cfg)
+        # cfg = rospy.get_param(rospy.get_param(f'/{self.node_name}/configname'))
+        modelpath = rospy.get_param(f'/{self.node_name}/model_path')
+        self.classes = [int(e) for e in rospy.get_param(f'/{self.node_name}/classes').strip('[]').split(',')]
+        self.classifier = NeuralClassifier.from_config(modelpath)
 
     def run(self):
         # Central Loop
@@ -48,7 +50,8 @@ class ClassifierNode():
         # Starting from the old message generate the new one
         new_msg = NeuroOutput()
         info = NeuroDataInfo()
-        new_msg.decoder.classes = self.classifier.get_classes()
+        # new_msg.decoder.classes = self.classifier.get_classes()
+        new_msg.decoder.classes = self.classes
         new_msg.hardpredict = NeuroDataInt32(info,pred)
         new_msg.softpredict = NeuroDataFloat(info,prob)
         self.pub.publish(new_msg)

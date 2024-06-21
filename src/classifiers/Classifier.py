@@ -58,3 +58,42 @@ class NeuralClassifier(Classifier):
     def get_classes(self):
         return self.classes
 
+
+class NeuralClassifier(Classifier):
+    def __init__(self,net,mu,sigma):
+        self.net = net
+        self.mu = mu
+        self.sigma = sigma
+
+    def from_config(cfg_path):
+        # LE TENGO SOLO PER PARANOIA CHE QUALCOSA NON VADA MA DOVREI POTERLE BUTTARE
+        # sbj_path = cfg['path']
+        # model_path = os.path.join(sbj_path,"model.pt")
+        # mean_std_path = os.path.join(sbj_path,"mean_std.npz")
+        # self.net = get_class(cfg['classname'])(**cfg['options']).to('cpu')
+        # self.classes = cfg['classes']
+        # self.num_classes = len(self.classes)
+        # print(self.num_classes)
+
+        # self.net.eval()
+        # self.net.load_state_dict(torch.load(model_path,map_location=torch.device('cpu'))['model'])
+        # cc = np.load(mean_std_path)
+        # self.mu, self.sigma = cc['mu'], cc['sigma']
+
+        cfg = torch.load(cfg_path,map_location=torch.device('cpu'))
+
+        net = get_class(cfg['config']['classname'])(**cfg['config']['options']).to('cpu')
+        net.load_state_dict(cfg['model'])
+        net.eval()
+        mu,sigma = cfg['mu'],cfg['sigma']
+        return NeuralClassifier(net,mu,sigma)
+
+    def __call__(self,x):
+        x = (x-self.mu)/self.sigma
+        with torch.no_grad():
+            probs = self.net(x).cpu()
+        probs = torch.softmax(probs,dim=1).squeeze().tolist()
+        pred = [0] * len(probs)
+        pred[int(np.argmax(probs))] = 1
+        return pred, probs
+
