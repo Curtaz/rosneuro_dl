@@ -67,7 +67,6 @@ class SMRControl():
         values = np.array(msg.softpredict.data)
         classes = msg.decoder.classes
         _,idx,_ = np.intersect1d(self.classes,classes,assume_unique=True,return_indices=True)
-        print(idx,self.classes,classes)
         self.values = values[idx]
         self.new_data = True
 
